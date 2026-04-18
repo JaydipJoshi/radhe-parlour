@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Phone,
   MapPin,
@@ -887,7 +887,50 @@ function PreOrder() {
   );
 }
 
+function AnimatedCounter({ end, duration = 2000 }: { end: number; duration?: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    let animationFrame: number;
+
+    const easeOutQuad = (t: number) => t * (2 - t);
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+
+      setCount(Math.floor(easeOutQuad(progress) * end));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [end, duration]);
+
+  return <>{count.toLocaleString()}</>;
+}
+
 function Footer() {
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("https://api.counterapi.dev/v1/radhe-parlour-site/visits/up")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.count === "number") {
+          setVisitorCount(data.count);
+        }
+      })
+      .catch((err) => console.error("Could not fetch visitor count:", err));
+  }, []);
+
   return (
     <footer className="border-t border-border bg-secondary">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
@@ -969,8 +1012,16 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-5 text-center text-xs text-muted-foreground sm:px-6">
-          © {new Date().getFullYear()} Radhe Parlour & General Store. All rights reserved.
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-5 sm:flex-row sm:px-6">
+          <div className="text-center text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Radhe Parlour & General Store. All rights reserved.
+          </div>
+          {visitorCount !== null && (
+            <div className="flex flex-none items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-soft transition-colors hover:border-primary/30 hover:text-foreground">
+              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <span><AnimatedCounter end={visitorCount} /> website visits</span>
+            </div>
+          )}
         </div>
       </div>
     </footer>
