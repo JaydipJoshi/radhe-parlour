@@ -926,15 +926,24 @@ function Footer() {
       const upUrl = "https://api.counterapi.dev/v1/radhe-parlour-v3/visits/up";
       
       try {
-        let res = await fetch(upUrl);
-        let data = await res.json().catch(() => null);
+        const hasVisited = localStorage.getItem("radhe_v3_visited");
+        let res;
         
-        if (!res.ok || !data || typeof data.count !== "number") {
-          // If the API blocked the IP from duplicate increments (e.g. rate limit),
-          // fallback to fetching the current total without incrementing.
-          res = await fetch(getUrl);
-          data = await res.json().catch(() => null);
+        if (!hasVisited) {
+          // If the user hasn't visited before, increment!
+          res = await fetch(upUrl);
+          let data = await res.json().catch(() => null);
+          
+          if (res.ok && data && typeof data.count === "number") {
+            setVisitorCount(data.count);
+            localStorage.setItem("radhe_v3_visited", "true");
+            return;
+          }
         }
+        
+        // If they have visited already (like on a page refresh), just get the visual number
+        res = await fetch(getUrl);
+        const data = await res.json().catch(() => null);
         
         if (data && typeof data.count === "number") {
           setVisitorCount(data.count);
