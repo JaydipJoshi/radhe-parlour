@@ -18,11 +18,11 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import heroShop from "@/assets/hero-shop.jpg";
-import galleryDairy from "@/assets/gallery-dairy.jpg";
-import gallerySnacks from "@/assets/gallery-snacks.jpg";
-import galleryStationery from "@/assets/gallery-stationery.jpg";
-import galleryExterior from "@/assets/gallery-exterior.jpg";
+import heroShop from "../assets/hero-shop.jpg";
+import galleryDairy from "../assets/gallery-dairy.jpg";
+import gallerySnacks from "../assets/gallery-snacks.jpg";
+import galleryStationery from "../assets/gallery-stationery.jpg";
+import galleryExterior from "../assets/gallery-exterior.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
