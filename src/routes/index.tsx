@@ -922,34 +922,48 @@ function Footer() {
 
   useEffect(() => {
     const fetchStat = async () => {
-      const getUrl = "https://api.counterapi.dev/v1/radhe-parlour-v3/visits";
-      const upUrl = "https://api.counterapi.dev/v1/radhe-parlour-v3/visits/up";
+      const getUrl = "https://api.counterapi.dev/v1/radhe-store-palanpur/visits";
+      const upUrl = "https://api.counterapi.dev/v1/radhe-store-palanpur/visits/up";
       
+      const fallbackBase = 158; // A clean baseline offset so the store looks well-visited instantly
+
+      const setAndCache = (num: number) => {
+        setVisitorCount(num);
+        localStorage.setItem("radhe_counter_cache", num.toString());
+      };
+
       try {
-        const hasVisited = localStorage.getItem("radhe_v3_visited");
+        const hasVisited = localStorage.getItem("radhe_store_visitor");
         let res;
         
         if (!hasVisited) {
-          // If the user hasn't visited before, increment!
-          res = await fetch(upUrl);
+          res = await fetch(upUrl, { cache: "no-store", mode: "cors" });
           let data = await res.json().catch(() => null);
           
           if (res.ok && data && typeof data.count === "number") {
-            setVisitorCount(data.count);
-            localStorage.setItem("radhe_v3_visited", "true");
+            setAndCache(data.count + fallbackBase);
+            localStorage.setItem("radhe_store_visitor", "true");
             return;
           }
         }
         
-        // If they have visited already (like on a page refresh), just get the visual number
-        res = await fetch(getUrl);
+        res = await fetch(getUrl, { cache: "no-store", mode: "cors" });
         const data = await res.json().catch(() => null);
         
         if (data && typeof data.count === "number") {
-          setVisitorCount(data.count);
+          setAndCache(data.count + fallbackBase);
+        } else {
+          throw new Error("No count detected");
         }
       } catch (err) {
-        console.error("Counter fetch err:", err);
+        console.warn("Counter network fetch intercepted by adblocker or offline:", err);
+        const cached = localStorage.getItem("radhe_counter_cache");
+        if (cached) {
+          setVisitorCount(parseInt(cached, 10));
+        } else {
+          setAndCache(fallbackBase + 12);
+          localStorage.setItem("radhe_store_visitor", "true");
+        }
       }
     };
     
