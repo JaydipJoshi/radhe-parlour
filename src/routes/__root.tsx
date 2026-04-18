@@ -1,6 +1,6 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-import appCss from "../styles.css?url";
 import faviconUrl from "../assets/favicon.svg?url";
 
 function NotFoundComponent() {
@@ -26,55 +26,55 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Radhe Parlour & General Store — Fresh Dairy & Daily Essentials in Palanpur" },
-      {
-        name: "description",
-        content:
-          "Your nearby store in Palanpur for fresh Amul milk, ice cream, chocolates, stationery and daily groceries. Open till 8:30 PM.",
-      },
-      { name: "author", content: "Radhe Parlour & General Store" },
-      { property: "og:title", content: "Radhe Parlour & General Store — Palanpur" },
-      {
-        property: "og:description",
-        content: "Fresh dairy, ice cream, stationery and daily essentials on VIP Road, Palanpur.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "icon", type: "image/svg+xml", href: faviconUrl },
-      { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap",
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
 
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
 function RootComponent() {
+  useEffect(() => {
+    // Set document title
+    document.title = "Radhe Parlour & General Store — Fresh Dairy & Daily Essentials in Palanpur";
+
+    // Set favicon
+    let faviconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+    if (!faviconLink) {
+      faviconLink = document.createElement("link");
+      faviconLink.rel = "icon";
+      faviconLink.type = "image/svg+xml";
+      document.head.appendChild(faviconLink);
+    }
+    faviconLink.href = faviconUrl;
+
+    // Set meta description
+    let metaDesc = document.querySelector("meta[name='description']") as HTMLMetaElement | null;
+    if (!metaDesc) {
+      metaDesc = document.createElement("meta");
+      metaDesc.name = "description";
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.content =
+      "Your nearby store in Palanpur for fresh Amul milk, ice cream, chocolates, stationery and daily groceries. Open till 8:30 PM.";
+
+    // Load Google Fonts if not already loaded
+    if (!document.querySelector("link[href*='fonts.googleapis.com/css2?family=Poppins']")) {
+      const preconnect1 = document.createElement("link");
+      preconnect1.rel = "preconnect";
+      preconnect1.href = "https://fonts.googleapis.com";
+      document.head.appendChild(preconnect1);
+
+      const preconnect2 = document.createElement("link");
+      preconnect2.rel = "preconnect";
+      preconnect2.href = "https://fonts.gstatic.com";
+      preconnect2.crossOrigin = "anonymous";
+      document.head.appendChild(preconnect2);
+
+      const fontLink = document.createElement("link");
+      fontLink.rel = "stylesheet";
+      fontLink.href =
+        "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap";
+      document.head.appendChild(fontLink);
+    }
+  }, []);
+
   return <Outlet />;
 }
