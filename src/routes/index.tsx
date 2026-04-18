@@ -922,18 +922,19 @@ function Footer() {
 
   useEffect(() => {
     const fetchStat = async () => {
-      const getUrl = "https://api.counterapi.dev/v1/radhe-store-palanpur/visits";
-      const upUrl = "https://api.counterapi.dev/v1/radhe-store-palanpur/visits/up";
+      // Setup a brand new, completely fresh namespace so the count strictly starts at 0 right now
+      const getUrl = "https://api.counterapi.dev/v1/radhe-store-stats-v5/visits";
+      const upUrl = "https://api.counterapi.dev/v1/radhe-store-stats-v5/visits/up";
       
-      const fallbackBase = 158; // A clean baseline offset so the store looks well-visited instantly
+      const fallbackBase = 0; // Strict base as requested to show exact real numbers
 
       const setAndCache = (num: number) => {
         setVisitorCount(num);
-        localStorage.setItem("radhe_counter_cache", num.toString());
+        localStorage.setItem("radhe_v5_counter_cache", num.toString());
       };
 
       try {
-        const hasVisited = localStorage.getItem("radhe_store_visitor");
+        const hasVisited = localStorage.getItem("radhe_v5_visitor");
         let res;
         
         if (!hasVisited) {
@@ -942,7 +943,7 @@ function Footer() {
           
           if (res.ok && data && typeof data.count === "number") {
             setAndCache(data.count + fallbackBase);
-            localStorage.setItem("radhe_store_visitor", "true");
+            localStorage.setItem("radhe_v5_visitor", "true");
             return;
           }
         }
@@ -957,12 +958,14 @@ function Footer() {
         }
       } catch (err) {
         console.warn("Counter network fetch intercepted by adblocker or offline:", err);
-        const cached = localStorage.getItem("radhe_counter_cache");
+        const cached = localStorage.getItem("radhe_v5_counter_cache");
         if (cached) {
           setVisitorCount(parseInt(cached, 10));
         } else {
-          setAndCache(fallbackBase + 12);
-          localStorage.setItem("radhe_store_visitor", "true");
+          // Instead of adding an arbitrary boost, we set the initial adblocker fallback to 1 
+          // because if they are here, that is technically 1 visit!
+          setAndCache(fallbackBase + 1);
+          localStorage.setItem("radhe_v5_visitor", "true");
         }
       }
     };
