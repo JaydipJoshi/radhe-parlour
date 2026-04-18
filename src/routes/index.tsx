@@ -921,25 +921,30 @@ function Footer() {
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
   useEffect(() => {
-    // Resetting keys to start a fresh count
-    const hasVisited = localStorage.getItem("radhe_v3_visited");
-    const namespace = "radhe-parlour-store-new";
-    const incrementUrl = `https://api.counterapi.dev/v1/${namespace}/visits/up`;
-    const getUrl = `https://api.counterapi.dev/v1/${namespace}/visits`;
-
-    const url = hasVisited ? getUrl : incrementUrl;
-
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchStat = async () => {
+      const getUrl = "https://api.counterapi.dev/v1/radhe-parlour-v3/visits";
+      const upUrl = "https://api.counterapi.dev/v1/radhe-parlour-v3/visits/up";
+      
+      try {
+        let res = await fetch(upUrl);
+        let data = await res.json().catch(() => null);
+        
+        if (!res.ok || !data || typeof data.count !== "number") {
+          // If the API blocked the IP from duplicate increments (e.g. rate limit),
+          // fallback to fetching the current total without incrementing.
+          res = await fetch(getUrl);
+          data = await res.json().catch(() => null);
+        }
+        
         if (data && typeof data.count === "number") {
           setVisitorCount(data.count);
-          if (!hasVisited) {
-            localStorage.setItem("radhe_v3_visited", "true");
-          }
         }
-      })
-      .catch((err) => console.error("Counter error:", err));
+      } catch (err) {
+        console.error("Counter fetch err:", err);
+      }
+    };
+    
+    fetchStat();
   }, []);
 
   return (
