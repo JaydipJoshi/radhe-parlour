@@ -921,14 +921,25 @@ function Footer() {
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("https://api.counterapi.dev/v1/radhe-parlour-site/visits/up")
+    // Resetting keys to start a fresh count
+    const hasVisited = localStorage.getItem("radhe_v3_visited");
+    const namespace = "radhe-parlour-store-new";
+    const incrementUrl = `https://api.counterapi.dev/v1/${namespace}/visits/up`;
+    const getUrl = `https://api.counterapi.dev/v1/${namespace}/visits`;
+
+    const url = hasVisited ? getUrl : incrementUrl;
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (data && typeof data.count === "number") {
           setVisitorCount(data.count);
+          if (!hasVisited) {
+            localStorage.setItem("radhe_v3_visited", "true");
+          }
         }
       })
-      .catch((err) => console.error("Could not fetch visitor count:", err));
+      .catch((err) => console.error("Counter error:", err));
   }, []);
 
   return (
